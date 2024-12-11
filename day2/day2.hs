@@ -1,4 +1,5 @@
 import Data.List ((\\))
+import qualified Data.List as L
 
 main :: IO ()
 main = do
@@ -27,17 +28,9 @@ isSafe report = go (signum $ head report - last report) report
         | otherwise                          = go s xs
 
 isSafeTolerant :: Report -> Bool
-isSafeTolerant report = go (signum $ head report - last report) 0 report
-  where
-    go :: Integer -> Integer -> Report -> Bool
-    go _ _ []  = False
-    go _ acc _
-        | acc > 1 = False
-    go _ _ [_] = True
-    go s acc (x:x':xs)
-        | abs (x - x') `notElem` [1..3]  = go s (acc + 1) (x:xs) || go s (acc + 1) (x':xs)
-        | signum (x - x') /= s           = go s (acc + 1) (x:xs) || go s (acc + 1) (x':xs)
-        | otherwise                      = go s acc (x':xs)
+isSafeTolerant x
+    = any isSafe
+    $ zipWith (++) (L.inits x) (map (drop 1) $ L.tails x)
 
 count :: Eq a => (a -> Bool) -> [a] -> Integer
 count p = foldr (\y acc -> if p y then acc + 1 else acc) 0
